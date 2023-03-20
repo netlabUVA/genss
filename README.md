@@ -1,2 +1,1 @@
-# GenOrdStateSpace: Simulate and Fit Ordinal State-Space Models
-# genss
+# genss: Simulate and Fit Ordinal State-Space Models
