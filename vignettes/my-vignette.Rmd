@@ -1,0 +1,45 @@
+---
+title: "Simulating a Gaussian State-Space Model"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+```{r setup}
+library(genss)
+```
+
+```{r}
+
+# 1. set up model parameters
+loadings <- matrix(data = c(c(.7, .3), c(0, 1), c(1, 0)), nrow = 3, ncol = 2, byrow = TRUE) # measure-state loadings
+
+process_mat <- matrix(data = c(c(.5, .5), c(.5, .5)), nrow = 2, ncol = 2, byrow = TRUE) # transition matrix
+
+sigmas <- c(1, 1, 1) # measure standard deviation
+
+# 2. set up measure and process args
+measure_args <- list("loadings" = loadings, "sigmas" = sigmas)
+process_args <- list("process_mat" = process_mat)
+
+# 3. generate state-space model
+lin <- statespace_model(
+  measure_type = "lin",
+  n_states = NCOL(loadings),
+  n_measures = NROW(loadings),
+  measure_args = measure_args,
+  process_args = process_args,
+  times = c(1:100),
+  sim = TRUE
+)
+```
