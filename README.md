@@ -19,3 +19,8 @@ $$p(y_{it} > j | x_t) = \frac{1}{1+\exp[-(\boldsymbol{H}\mathbf{x}_t - \beta_{ij
 `genss` currently uses `pomp` to construct and fit these models using Multiple Iterated Filtering. To identify both types of models, the marginal variance of the state process is constrained by solving the following equation for the diagonal elements of $\Sigma$ ($\Gamma$ is the marginal covariance matrix, with diagonal elements constrained to 1, while $\Sigma$ has off diagonal elements constrained to 0):
 $$vec(\boldsymbol{\Gamma})=(\mathbf{I}-\mathbf{A}\otimes\mathbf{A} )^{-1} vec(\boldsymbol{\Sigma})$$
 
+## Installation
+
+## Interested in Using `genss`?
+
+Get in touch with Teague Henry (trhenry@virginia.edu) and let us know your use case!
