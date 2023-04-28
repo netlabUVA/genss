@@ -1,12 +1,12 @@
 Package: genss
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Simulate and Fit General State-Space Models Using Multiple Iterated Filtering
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Ami Falk, Teague Henry
+Maintainer: Teague Henry <trhenry@virginia.edu>
+Description: This package presents a framework for specifying and estimating state-space models, 
+    with particular application to psychological and behavioral timeseries.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: Rcpp (>= 1.0.7),
