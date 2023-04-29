@@ -21,14 +21,14 @@ $$vec(\boldsymbol{\Gamma})=(\mathbf{I}-\mathbf{A}\otimes\mathbf{A} )^{-1} vec(\b
 
 ## Installation
 
-First ensure that you have `devtools` installed and loaded in R.
+First, ensure that you have `devtools` installed and loaded in R.
 
 ```R
 install.packages("devtools")
 library(devtools)
 ```
 
-Then, you can install and start to use the package.
+Then, you can install and use the package.
 
 ```R
 install_github("netlabUVA/genss")

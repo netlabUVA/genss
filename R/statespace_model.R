@@ -28,6 +28,115 @@ setClass("statespace_mod", slots = c(
   mif2_diagnostics = "data.frame"
 ))
 
+
+check_general_args <- function(n_measures,
+                               process_mat,
+                               loadings_mat,
+                               times,
+                               sim) {
+  if (any(dim(process_mat) != c(2, 2))) {
+    stop("Incorrect dimension: process matrix should be 2x2.")
+  }
+
+  if (any(dim(loadings_mat) != c(n_measures, 2))) {
+    stop("Incorrect dimension: loadings matrix should be n_measures x 2.")
+  }
+
+  if (sim && is.null(times)) {
+    stop("Times vector must be specified for simulation mode.")
+  }
+
+  if (!sim && is.null(data)) {
+    stop("Data must be specified for estimate mode.")
+  }
+}
+
+
+# TODO NEEDS DOCUMENTATION
+lin_two_state_statespacemodel <- function(data = NULL,
+                                          n_measures,
+                                          process_mat,
+                                          loadings_mat,
+                                          sigmas,
+                                          times = NULL,
+                                          n_particles = 500,
+                                          n_mif2_iter = 1000,
+                                          sim = FALSE) {
+
+  check_general_args(n_measures, process_mat, loadings_mat, times, sim)
+  if (length(sigmas) != n_measures) {
+    stop("Incorrect dimension: sigmas should have length n_measures.")
+  }
+
+  sigma_names <- sprintf("log_sigma%d", 1:n_measures)
+  obs_names <- sprintf("measure%d", 1:n_measures)
+  state_names <- c("state1", "state2")
+
+  loading_names <- c()
+  for (measure_i in seq(n_measures)) {
+    loading_names <- c(loading_names, sprintf("l%d_%d", measure_i, 1:2))
+  }
+  param_names <- c("a1_1", "a1_2", "a2_1", "a2_2", loading_names, sigma_names)
+  params <- c(c(process_mat), c(loadings_mat), log(sigmas))
+  
+  names(params) <- param_names
+
+  if (sim) {
+    if (is.null(data)) {
+      data <- data.frame(matrix(0, nrow = length(times), ncol = n_measures))
+    }
+
+    pomp::pomp(
+      data = data,
+      times = times,
+      t0 = 0,
+      rmeasure = gen_rmeasure_lin(loadings_mat),
+      dmeasure = gen_dmeasure_lin(loadings_mat),
+      rprocess = pomp::discrete_time(step.fun = gen_rprocess_lin()),
+      rinit = gen_rinit_lin(),
+      obsnames = obs_names,
+      statenames = state_names,
+      paramnames = param_names,
+      params = params
+    ) -> pomp_obj
+
+    return(pomp_obj)
+  } else {
+
+    pomp::pomp(
+      data = data,
+      times = times,
+      t0 = 0,
+      rmeasure = gen_rmeasure_lin(loadings_mat),
+      dmeasure = gen_dmeasure_lin(loadings_mat),
+      rprocess = pomp::discrete_time(step.fun = gen_rprocess_lin()),
+      rinit = gen_rinit_lin(),
+      obsnames = obs_names,
+      statenames = state_names,
+      paramnames = param_names,
+      params = params
+    ) -> pomp_obj
+
+    return(methods::new("statespace_mod",
+      pomp_obj = pomp_obj,
+      data = data,
+      measure_type = "lin",
+      process_type = "lin",
+      measure_args = list("loadings_mat" = loadings_mat, "sigmas" = sigmas, "log_sigmas" = log(sigmas)),
+      process_args = list(),
+      time_args = list("times" = times),
+      mif2_args = list("n_particles" = n_particles, "n_mif2_iter" = n_mif2_iter),
+      param_traces = list(),
+      filtered_states = list(),
+      mif2_diagnostics = data.frame()
+    ))
+  }
+}
+
+
+grm_two_state_statespacemodel <- function() {}
+
+
 #' Generate a state-space model object
 #'
 #' possible measure args:
@@ -134,7 +243,6 @@ statespace_model <- function(data = NULL,
 
     return(pomp_obj)
   } else {
-
     # transform alpha within model if grm
     if (measure_type == "grm") {
       n_betas <- sum(lengths(measure_args[["betas"]]))
