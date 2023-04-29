@@ -67,7 +67,6 @@ check_general_args <- function(n_measures,
 #' @return An S4 statespace_mod class or a pomp object.
 #' @export
 #'
-#' @examples
 lin_two_state_statespacemodel <- function(data = NULL,
                                           n_measures,
                                           process_mat,
@@ -93,7 +92,7 @@ lin_two_state_statespacemodel <- function(data = NULL,
   }
   param_names <- c("a1_1", "a1_2", "a2_1", "a2_2", loading_names, sigma_names)
   params <- c(c(process_mat), c(loadings_mat), sigmas)
-  
+
   names(params) <- param_names
 
   if (sim) {
@@ -130,7 +129,7 @@ lin_two_state_statespacemodel <- function(data = NULL,
       obsnames = obs_names,
       statenames = state_names,
       paramnames = param_names,
-      params = params, 
+      params = params,
       partrans = parameter_trans(log = sigma_names)
     ) -> pomp_obj
 
@@ -166,7 +165,6 @@ lin_two_state_statespacemodel <- function(data = NULL,
 #' @return An S4 statespace_mod class or a pomp object.
 #' @export
 #'
-#' @examples
 grm_two_state_statespacemodel <- function(data = NULL,
                                           n_measures,
                                           process_mat,
@@ -199,7 +197,7 @@ grm_two_state_statespacemodel <- function(data = NULL,
   for (measure_i in seq_along(betas)){
     for (beta_i in seq_along(betas[[measure_i]])){
       beta_names <- c(beta_names, sprintf("log_beta%d_%d", measure_i, beta_i))
-      
+
       if (beta_i > 1) {
         log_betas[[measure_i]][[beta_i]] <- log(betas[[measure_i]][[beta_i]] - betas[[measure_i]][[beta_i - 1]])
       }
@@ -215,7 +213,7 @@ grm_two_state_statespacemodel <- function(data = NULL,
   }
   param_names <- c("a1_1", "a1_2", "a2_1", "a2_2", loading_names, alpha_names, beta_names)
   params <- c(c(process_mat), c(loadings_mat), log(alphas), unlist(log_betas))
-  
+
   names(params) <- param_names
 
   if (sim) {

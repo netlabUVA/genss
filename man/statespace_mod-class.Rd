@@ -3,9 +3,9 @@
 \docType{class}
 \name{statespace_mod-class}
 \alias{statespace_mod-class}
-\title{An S4 class for fitting and validating state-space models}
+\title{An S4 class for fitting and validating state-space models.}
 \description{
-An S4 class for fitting and validating state-space models
+An S4 class for fitting and validating state-space models.
 }
 \section{Slots}{
 
@@ -18,7 +18,7 @@ An S4 class for fitting and validating state-space models
 
 \item{\code{process_type}}{character. List of named parameters for the r and d process functions.}
 
-\item{\code{measure_args}}{list .}
+\item{\code{measure_args}}{list.}
 
 \item{\code{process_args}}{list.}
 
