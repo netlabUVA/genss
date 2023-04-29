@@ -4,7 +4,7 @@ gen_rmeasure_grm <- function(loadings, alphas, betas) {
 
   # pull out arrays of beta values to iterate
   for (measure_i in seq_along(betas)) {
-    writeLines(sprintf("const double *beta%dt = &beta%d_1;", measure_i, measure_i), con)
+    writeLines(sprintf("const double *log_beta%dt = &log_beta%d_1;", measure_i, measure_i), con)
   }
   writeLines("\n", con)
 
@@ -16,14 +16,14 @@ gen_rmeasure_grm <- function(loadings, alphas, betas) {
 
   # create beta arrays
   for (measure_i in seq_along(betas)) {
-    writeLines(sprintf("double beta%d[%d] = {beta%dt[0]};", measure_i, length(betas[[measure_i]]), measure_i), con)
+    writeLines(sprintf("double beta%d[%d] = {log_beta%dt[0]};", measure_i, length(betas[[measure_i]]), measure_i), con)
   }
   writeLines("\n", con)
 
   # compute beta values
   for (measure_i in seq_along(betas)) {
     writeLines(sprintf("for(int i = 1; i < %d; i++){", length(betas[[measure_i]])), con)
-    writeLines(sprintf("beta%d[i] = beta%d[i-1] + exp(beta%dt[i]);}", measure_i, measure_i, measure_i), con)
+    writeLines(sprintf("beta%d[i] = beta%d[i-1] + exp(log_beta%dt[i]);}", measure_i, measure_i, measure_i), con)
   }
   writeLines("\n", con)
 
@@ -94,7 +94,7 @@ gen_dmeasure_grm <- function(loadings, alphas, betas) {
 
   # pull out arrays of beta values to iterate
   for (measure_i in seq_along(betas)) {
-    writeLines(sprintf("const double *beta%dt = &beta%d_1;", measure_i, measure_i), con)
+    writeLines(sprintf("const double *log_beta%dt = &log_beta%d_1;", measure_i, measure_i), con)
   }
   writeLines("\n", con)
 
@@ -106,14 +106,14 @@ gen_dmeasure_grm <- function(loadings, alphas, betas) {
 
   # create beta arrays
   for (measure_i in seq_along(betas)) {
-    writeLines(sprintf("double beta%d[%d] = {beta%dt[0]};", measure_i, length(betas[[measure_i]]), measure_i), con)
+    writeLines(sprintf("double beta%d[%d] = {log_beta%dt[0]};", measure_i, length(betas[[measure_i]]), measure_i), con)
   }
   writeLines("\n", con)
 
   # compute beta values
   for (measure_i in seq_along(betas)) {
     writeLines(sprintf("for(int i = 1; i < %d; i++){", length(betas[[measure_i]])), con)
-    writeLines(sprintf("beta%d[i] = beta%d[i-1] + exp(beta%dt[i]);}", measure_i, measure_i, measure_i), con)
+    writeLines(sprintf("beta%d[i] = beta%d[i-1] + exp(log_beta%dt[i]);}", measure_i, measure_i, measure_i), con)
   }
   writeLines("\n", con)
 

@@ -198,7 +198,7 @@ grm_two_state_statespacemodel <- function(data = NULL,
   log_betas <- betas
   for (measure_i in seq_along(betas)){
     for (beta_i in seq_along(betas[[measure_i]])){
-      beta_names <- c(beta_names, sprintf("beta%d_%d", measure_i, beta_i))
+      beta_names <- c(beta_names, sprintf("log_beta%d_%d", measure_i, beta_i))
       
       if (beta_i > 1) {
         log_betas[[measure_i]][[beta_i]] <- log(betas[[measure_i]][[beta_i]] - betas[[measure_i]][[beta_i - 1]])
