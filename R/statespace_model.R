@@ -52,7 +52,22 @@ check_general_args <- function(n_measures,
 }
 
 
-# TODO NEEDS DOCUMENTATION
+#' Generate a two-state linear measure state-space model object
+#'
+#' @param data The provided dataset. Defaults to NULL.
+#' @param n_measures The number of measures.
+#' @param process_mat A 2 x 2 transition matrix for each state.
+#' @param loadings_mat A (n_measure x 2) matrix of state-measure loadings. Cross-loadings allowed.
+#' @param sigmas A vector defining standard deviations for each measure.
+#' @param times A vector sequence of times.
+#' @param n_particles Number of particles used to estimate parameters. Defaults to 500.
+#' @param n_mif2_iter Number of iterations on a mif2 run. Defaults to 1000.
+#' @param sim Whether or not a model should be fit or data should be simulated. If FALSE, returns a pomp object. Defaults to FALSE.
+#'
+#' @return An S4 statespace_mod class or a pomp object.
+#' @export
+#'
+#' @examples
 lin_two_state_statespacemodel <- function(data = NULL,
                                           n_measures,
                                           process_mat,
@@ -135,6 +150,19 @@ lin_two_state_statespacemodel <- function(data = NULL,
 
 
 grm_two_state_statespacemodel <- function() {}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #' Generate a state-space model object
