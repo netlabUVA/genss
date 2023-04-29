@@ -1,10 +1,10 @@
-#' An S4 class for fitting and validating state-space models
+#' An S4 class for fitting and validating state-space models.
 #'
 #' @slot pomp_obj pomp.
 #' @slot data data.frame.
 #' @slot measure_type character. List of named parameters for the r and d measure functions.
 #' @slot process_type character. List of named parameters for the r and d process functions.
-#' @slot measure_args list .
+#' @slot measure_args list.
 #' @slot process_args list.
 #' @slot time_args list.
 #' @slot mif2_args list.
@@ -52,7 +52,7 @@ check_general_args <- function(n_measures,
 }
 
 
-#' Generate a two-state linear measure state-space model object
+#' Generate a two-state linear measure state-space model object.
 #'
 #' @param data The provided dataset. Defaults to NULL.
 #' @param n_measures The number of measures.
@@ -83,7 +83,7 @@ lin_two_state_statespacemodel <- function(data = NULL,
     stop("Incorrect dimension: sigmas should have length n_measures.")
   }
 
-  sigma_names <- sprintf("log_sigma%d", 1:n_measures)
+  sigma_names <- sprintf("sigma%d", 1:n_measures)
   obs_names <- sprintf("measure%d", 1:n_measures)
   state_names <- c("state1", "state2")
 
@@ -92,7 +92,7 @@ lin_two_state_statespacemodel <- function(data = NULL,
     loading_names <- c(loading_names, sprintf("l%d_%d", measure_i, 1:2))
   }
   param_names <- c("a1_1", "a1_2", "a2_1", "a2_2", loading_names, sigma_names)
-  params <- c(c(process_mat), c(loadings_mat), log(sigmas))
+  params <- c(c(process_mat), c(loadings_mat), sigmas)
   
   names(params) <- param_names
 
@@ -112,7 +112,8 @@ lin_two_state_statespacemodel <- function(data = NULL,
       obsnames = obs_names,
       statenames = state_names,
       paramnames = param_names,
-      params = params
+      params = params,
+      partrans = parameter_trans(log = sigma_names)
     ) -> pomp_obj
 
     return(pomp_obj)
@@ -129,7 +130,8 @@ lin_two_state_statespacemodel <- function(data = NULL,
       obsnames = obs_names,
       statenames = state_names,
       paramnames = param_names,
-      params = params
+      params = params, 
+      partrans = parameter_trans(log = sigma_names)
     ) -> pomp_obj
 
     return(methods::new("statespace_mod",
@@ -137,7 +139,7 @@ lin_two_state_statespacemodel <- function(data = NULL,
       data = data,
       measure_type = "lin",
       process_type = "lin",
-      measure_args = list("loadings_mat" = loadings_mat, "sigmas" = sigmas, "log_sigmas" = log(sigmas)),
+      measure_args = list("loadings_mat" = loadings_mat, "sigmas" = sigmas),
       process_args = list(),
       time_args = list("times" = times),
       mif2_args = list("n_particles" = n_particles, "n_mif2_iter" = n_mif2_iter),
@@ -148,52 +150,15 @@ lin_two_state_statespacemodel <- function(data = NULL,
   }
 }
 
-
-grm_two_state_statespacemodel <- function() {}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#' Generate a state-space model object
-#'
-#' possible measure args:
-#' [grm]
-#' - loadings: a (n_measure x n_state) matrix of state-measure loadings. 1 if on, 0 if not. No cross-loadings.
-#' - alphas: a vector defining discrimination values for each measure.
-#' - betas: a list of vectors defining category boundaries for each measure.
-#'
-#' [lin]
-#' - loadings: a (n_measure x n_state) matrix of state-measure loadings. Cross-loadings allowed.
-#' - sigmas: a vector defining standard deviations for each measure.
-#'
-#' possible process args:
-#' [discrete]
-#' - process_mat: a (n_state x n_state) transition matrix for each state.
-#' - <optional> freed_params: a (n_state x n_state) matrix containing NA where transition values are not free to be estimated.
-#' [con]
-#' - process_mat: a (n_state x n_state) transition matrix for each state.
-#' - <optional> freed_params: a (n_state x n_state) matrix containing NA where transition values are not free to be estimated.
+#' Generate a two-state graded-response measure state-space model object.
 #'
 #' @param data The provided dataset. Defaults to NULL.
-#' @param n_states The number of states.
 #' @param n_measures The number of measures.
-#' @param measure_type Measure type selected ("grm" or "lin").
-#' @param process_type Process type selected. Defaults to "lin".
-#' @param measure_args List of named parameters for the r and d measure functions.
-#' @param process_args List of named parameters for the r and d process functions.
-#' @param dt Step size for Euler's method. If NULL, discrete time. Defaults to NULL.
-#' @param times Vector sequence of times.
+#' @param process_mat A 2 x 2 transition matrix for each state.
+#' @param loadings_mat A (n_measure x 2) matrix of state-measure loadings. 1 if on, 0 if not. No cross-loadings.
+#' @param alphas A vector defining discrimination values for each measure.
+#' @param betas A list of vectors defining category boundaries for each measure.
+#' @param times A vector sequence of times.
 #' @param n_particles Number of particles used to estimate parameters. Defaults to 500.
 #' @param n_mif2_iter Number of iterations on a mif2 run. Defaults to 1000.
 #' @param sim Whether or not a model should be fit or data should be simulated. If FALSE, returns a pomp object. Defaults to FALSE.
@@ -202,105 +167,100 @@ grm_two_state_statespacemodel <- function() {}
 #' @export
 #'
 #' @examples
-statespace_model <- function(data = NULL,
-                             n_states,
-                             n_measures,
-                             measure_type,
-                             process_type = "lin",
-                             measure_args,
-                             process_args,
-                             dt = NULL,
-                             times = NULL,
-                             n_particles = 500,
-                             n_mif2_iter = 1000,
-                             sim = FALSE) {
-  if (sim) {
-    if (is.null(times)) {
-      stop("Times vector must be specified for simulation mode.")
-    }
-  } else {
-    if (is.null(data)) {
-      stop("Data must be specified for estimate mode.")
-    }
+grm_two_state_statespacemodel <- function(data = NULL,
+                                          n_measures,
+                                          process_mat,
+                                          loadings_mat,
+                                          alphas,
+                                          betas,
+                                          times = NULL,
+                                          n_particles = 500,
+                                          n_mif2_iter = 1000,
+                                          sim = FALSE) {
+  check_general_args(n_measures, process_mat, loadings_mat, times, sim)
+  if (length(alphas) != n_measures) {
+    stop("Incorrect dimension: alphas should have length n_measures.")
+  }
+  if (length(betas) != n_measures) {
+    stop("Incorrect dimension: betas should have length n_measures.")
+  }
+  if ((TRUE %in% (rowSums(loadings_mat) > 1)) || TRUE %in% (rowSums(loadings_mat) == 0)) {
+    stop("A measure must depend on exactly one state.")
+  }
 
-    if (!is.null(times)) {
-      if (!is.null(dt)) {
-        warning("Continuous time observation vector (times) not given. Inferring discrete observations from data.")
+  alpha_names <- sprintf("log_alpha%d", 1:n_measures)
+  loading_names <- c()
+  for (measure_i in seq(n_measures)) {
+    loading_names <- c(loading_names, sprintf("l%d_%d", measure_i, 1:2))
+  }
+
+  beta_names <- c()
+  log_betas <- betas
+  for (measure_i in seq_along(betas)){
+    for (beta_i in seq_along(betas[[measure_i]])){
+      beta_names <- c(beta_names, sprintf("beta%d_%d", measure_i, beta_i))
+      
+      if (beta_i > 1) {
+        log_betas[[measure_i]][[beta_i]] <- log(betas[[measure_i]][[beta_i]] - betas[[measure_i]][[beta_i - 1]])
       }
-      times <- seq_len(NROW(data))
     }
   }
 
-  process_args[["dt"]] <- dt
-  process_args[["n_states"]] <- n_states
-  process_args[["n_measures"]] <- n_measures
+  obs_names <- sprintf("measure%d", 1:n_measures)
+  state_names <- c("state1", "state2")
 
-  measure_args[["n_states"]] <- n_states
-  measure_args[["n_measures"]] <- n_measures
-
-  do.call(paste("validate_measure_args_", measure_type, sep = ""), list(measure_args))
-  do.call(paste("validate_process_args_", process_type, sep = ""), list(process_args))
-
-  obsnames <- sprintf("measure%d", 1:n_measures)
-  statenames <- sprintf("state%d", 1:n_states)
-
-  params <- do.call(paste("get_transmeasure_", measure_type, sep = ""), list(measure_args))
-  params <- c(params, do.call(paste("get_transprocess_", process_type, sep = ""), list(process_args)))
-  paramnames <- names(params)
-
-  rmeas <- do.call(paste("gen_rmeasure_", measure_type, sep = ""), list(measure_args))
-  dmeas <- do.call(paste("gen_dmeasure_", measure_type, sep = ""), list(measure_args))
-  rproc <- do.call(paste("gen_rprocess_", process_type, sep = ""), list(process_args))
-  rinit <- do.call(paste("gen_rinit_", process_type, sep = ""), list(process_args))
-
-  if (is.null(dt)) {
-    rproc <- pomp::discrete_time(step.fun = rproc)
-  } else {
-    rproc <- pomp::euler(step.fun = rproc, delta.t = dt)
+  loading_names <- c()
+  for (measure_i in seq(n_measures)) {
+    loading_names <- c(loading_names, sprintf("l%d_%d", measure_i, 1:2))
   }
+  param_names <- c("a1_1", "a1_2", "a2_1", "a2_2", loading_names, alpha_names, beta_names)
+  params <- c(c(process_mat), c(loadings_mat), log(alphas), unlist(log_betas))
+  
+  names(params) <- param_names
 
   if (sim) {
     if (is.null(data)) {
       data <- data.frame(matrix(0, nrow = length(times), ncol = n_measures))
     }
     pomp::pomp(
-      data = data, times = times, t0 = 0, rmeasure = rmeas, dmeasure = dmeas,
-      rprocess = rproc, rinit = rinit, obsnames = obsnames, statenames = statenames,
-      paramnames = paramnames, params = params
+      data = data,
+      times = times,
+      t0 = 0,
+      rmeasure = gen_rmeasure_grm(loadings_mat, log(alphas), log_betas),
+      dmeasure = gen_dmeasure_grm(loadings_mat, log(alphas), log_betas),
+      rprocess = pomp::discrete_time(step.fun = gen_rprocess_lin()),
+      rinit = gen_rinit_lin(),
+      obsnames = obs_names,
+      statenames = state_names,
+      paramnames = param_names,
+      params = params
     ) -> pomp_obj
 
     return(pomp_obj)
   } else {
-    # transform alpha within model if grm
-    if (measure_type == "grm") {
-      n_betas <- sum(lengths(measure_args[["betas"]]))
-      alphas <- paramnames[(n_betas + 1):(n_betas + length(measure_args[["alphas"]]))]
-      # untransform params
-      params[(n_betas + 1):(n_betas + length(measure_args[["alphas"]]))] <- exp(params[(n_betas + 1):(n_betas + length(measure_args[["alphas"]]))])
 
-      pomp::pomp(
-        data = data, times = times, t0 = 0, rmeasure = rmeas, dmeasure = dmeas,
-        rprocess = rproc, rinit = rinit, obsnames = obsnames, statenames = statenames,
-        paramnames = paramnames, params = params, partrans = parameter_trans(log = alphas)
-      ) -> pomp_obj
-    } else {
-      pomp::pomp(
-        data = data, times = times, t0 = 0, rmeasure = rmeas, dmeasure = dmeas,
-        rprocess = rproc, rinit = rinit, obsnames = obsnames, statenames = statenames,
-        paramnames = paramnames, params = params
-      ) -> pomp_obj
-    }
-
-
+    pomp::pomp(
+      data = data,
+      times = times,
+      t0 = 0,
+      rmeasure = gen_rmeasure_grm(loadings_mat, log(alphas), log_betas),
+      dmeasure = gen_dmeasure_grm(loadings_mat, log(alphas), log_betas),
+      rprocess = pomp::discrete_time(step.fun = gen_rprocess_lin()),
+      rinit = gen_rinit_lin(),
+      obsnames = obs_names,
+      statenames = state_names,
+      paramnames = param_names,
+      params = params
+    ) -> pomp_obj
 
     return(methods::new("statespace_mod",
       pomp_obj = pomp_obj,
       data = data,
-      measure_type = measure_type,
-      process_type = process_type,
-      measure_args = measure_args,
-      process_args = process_args,
-      time_args = list("dt" = dt, "times" = times),
+      measure_type = "grm",
+      process_type = "lin",
+      measure_args = list("loadings_mat" = loadings_mat, "alphas" = alphas, "log_alphas" = log(alphas), "betas" = betas, "log_betas" = log_betas),
+      process_args = list(),
+      time_args = list("times" = times),
       mif2_args = list("n_particles" = n_particles, "n_mif2_iter" = n_mif2_iter),
       param_traces = list(),
       filtered_states = list(),

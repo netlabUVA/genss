@@ -8,7 +8,7 @@ gen_rmeasure_lin <- function(loadings) {
       if (state_i < NCOL(loadings)) {
         line <- c(line, sprintf("l%d_%d*state%d + ", measure_i, state_i, state_i))
       } else {
-        line <- c(line, sprintf("l%d_%d*state%d, exp(log_sigma%d));", measure_i, state_i, state_i, measure_i))
+        line <- c(line, sprintf("l%d_%d*state%d, sigma%d);", measure_i, state_i, state_i, measure_i))
         rmeasure_text <- c(rmeasure_text, line)
       }
     }
@@ -26,7 +26,7 @@ gen_dmeasure_lin <- function(loadings) {
       if (state_i < NCOL(loadings)) {
         line <- c(line, sprintf("l%d_%d*state%d + ", measure_i, state_i, state_i))
       } else {
-        line <- c(line, sprintf("l%d_%d*state%d, exp(log_sigma%d), 1);", measure_i, state_i, state_i, measure_i))
+        line <- c(line, sprintf("l%d_%d*state%d, sigma%d, 1);", measure_i, state_i, state_i, measure_i))
         dmeasure_text <- c(dmeasure_text, line)
       }
     }

@@ -1,16 +1,4 @@
-#' Generate grm rmeasure C code
-#'
-#' @param measure_args Named list of measure arguments
-#'
-#' @return A Csnippet
-#' @export
-#'
-#' @examples
-gen_rmeasure_grm <- function(measure_args) {
-  loadings <- measure_args[["loadings"]]
-  alphas <- measure_args[["alphas"]]
-  betas <- measure_args[["betas"]]
-
+gen_rmeasure_grm <- function(loadings, alphas, betas) {
   text <- tempfile(pattern = "rmeasure", fileext = ".txt")
   con <- file(text, "w")
 
@@ -22,7 +10,7 @@ gen_rmeasure_grm <- function(measure_args) {
 
   # transform alphas
   for (alpha_i in seq_along(alphas)) {
-    writeLines(sprintf("double alpha%dt = exp(alpha%d);", alpha_i, alpha_i), con)
+    writeLines(sprintf("double alpha%dt = exp(log_alpha%d);", alpha_i, alpha_i), con)
   }
   writeLines("\n", con)
 
@@ -93,19 +81,8 @@ gen_rmeasure_grm <- function(measure_args) {
   return(pomp::Csnippet(text_str))
 }
 
-#' Generate grm dmeasure C code
-#'
-#' @param measure_args Named list of measure arguments
-#'
-#' @return A Csnippet
-#' @export
-#'
-#' @examples
-gen_dmeasure_grm <- function(measure_args) {
-  loadings <- measure_args[["loadings"]]
-  alphas <- measure_args[["alphas"]]
-  betas <- measure_args[["betas"]]
 
+gen_dmeasure_grm <- function(loadings, alphas, betas) {
   text <- tempfile(pattern = "dmeasure", fileext = ".txt")
   con <- file(text, "w")
 
@@ -123,7 +100,7 @@ gen_dmeasure_grm <- function(measure_args) {
 
   # transform alphas
   for (alpha_i in seq_along(alphas)) {
-    writeLines(sprintf("double alpha%dt = exp(alpha%d);", alpha_i, alpha_i), con)
+    writeLines(sprintf("double alpha%dt = exp(log_alpha%d);", alpha_i, alpha_i), con)
   }
   writeLines("\n", con)
 
@@ -181,74 +158,4 @@ gen_dmeasure_grm <- function(measure_args) {
   close(con)
   text_str <- paste(readLines(text), collapse = "\n")
   return(pomp::Csnippet(text_str))
-}
-
-#' Transform grm parameters
-#'
-#' @param measure_args Named list of measure arguments
-#'
-#' @return A named list containing the parameters
-#' @export
-#'
-#' @examples
-get_transmeasure_grm <- function(measure_args) {
-  alphas <- measure_args[["alphas"]]
-  betas <- measure_args[["betas"]]
-
-  paramnames <- c()
-  params <- c()
-
-  # transform betas
-  trans_betas <- betas
-  for (measure_i in seq_along(betas)) {
-    for (beta_i in seq_along(betas[[measure_i]])) {
-      curr_beta <- sprintf("beta%d_%d", measure_i, beta_i)
-      paramnames <- c(paramnames, curr_beta)
-
-      if (beta_i > 1) {
-        trans_betas[[measure_i]][[beta_i]] <- log(betas[[measure_i]][[beta_i]] - betas[[measure_i]][[beta_i - 1]])
-      }
-
-      params <- c(params, trans_betas[[measure_i]][[beta_i]])
-    }
-  }
-
-  # transform alphas
-  for (alpha_i in seq_along(alphas)) {
-    curr_alpha <- sprintf("alpha%d", alpha_i)
-    paramnames <- c(paramnames, curr_alpha)
-
-    params <- c(params, log(alphas[[alpha_i]]))
-  }
-
-  return(stats::setNames(params, paramnames))
-}
-
-#' Validate grm measure arguments
-#'
-#' @param measure_args Named list of measure arguments
-#'
-#' @return NULL
-#' @export
-#'
-#' @examples
-validate_measure_args_grm <- function(measure_args) {
-  loadings <- measure_args[["loadings"]]
-  alphas <- measure_args[["alphas"]]
-  betas <- measure_args[["betas"]]
-  n_measures <- measure_args[["n_measures"]]
-  n_states <- measure_args[["n_states"]]
-
-  if (length(betas) != n_measures) {
-    stop("One set of category boundaries must be defined for each measure.")
-  }
-  if (length(alphas) != length(betas)) {
-    stop("One alpha must be defined for each measure.")
-  }
-  if (NCOL(loadings) != n_states || NROW(loadings) != n_measures) {
-    stop("State-measure loadings must have dimensions (n_measures x n_states).")
-  }
-  if ((TRUE %in% (rowSums(loadings) > 1)) || TRUE %in% (rowSums(loadings) == 0)) {
-    stop("A measure must depend on exactly one state.")
-  }
 }
