@@ -1,5 +1,7 @@
 # genss: Simulate and Fit General State-Space Models using Multiple Iterated Filtering
 
+[![DOI](https://zenodo.org/badge/616714568.svg)](https://zenodo.org/badge/latestdoi/616714568)
+
 This package presents a framework for specifying and estimating state-space models, with particular application to psychological and behavioral timeseries. This package should be considered in _alpha_ status, is in active development, and currently has limited features:
 
 - Estimate the parameters for a discrete time two state model (linear state dynamics) with normally distributed measurements, of the following form:
