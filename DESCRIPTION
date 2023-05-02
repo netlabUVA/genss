@@ -9,10 +9,8 @@ Description: This package presents a framework for specifying and estimating sta
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 1.0.7),
-         pomp,
+Imports: pomp,
          methods
-LinkingTo: Rcpp
 Suggests: 
     knitr,
     rmarkdown
